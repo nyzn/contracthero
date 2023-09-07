@@ -1,32 +1,16 @@
-import { forwardRef, PropsWithChildren } from "react";
+import { ButtonHTMLAttributes, forwardRef } from "react";
 import styled from "styled-components";
 import tw, { TwStyle } from "twin.macro";
 
 type Size = "small" | "medium" | "large";
 
-interface ButtonProps {
-  /**
-   * Is this the principal call to action on the page?
-   */
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   primary?: boolean;
-  /**
-   * How large should the button be?
-   */
   size?: Size;
-  /**
-   * Button contents
-   */
   label: string;
-  /**
-   * Optional click handler
-   */
   onClick?: () => void;
-
-  /**
-   * Is Button disabled?
-   */
   disabled?: boolean;
-}
+};
 
 const rootSizeVariant: Record<Size, TwStyle> = {
   small: tw`
@@ -46,15 +30,16 @@ const rootSizeVariant: Record<Size, TwStyle> = {
   `,
 };
 
-const Root = styled.button<ButtonProps>(
-  ({ primary = true, size = "medium", label, disabled = false }) => [
+const Root = styled.button<{ primary: boolean; size: Size; disabled: boolean }>(
+  ({ primary = true, size = "medium", disabled = false }) => [
     tw`
       rounded-lg
       border
-      bg-orange-400
+      bg-orange-100
       cursor-pointer
       transition
       hover:border-white
+      w-fit
     `,
     !primary &&
       tw`
@@ -70,11 +55,29 @@ const Root = styled.button<ButtonProps>(
   ]
 );
 
-export const Button = forwardRef<
-  HTMLButtonElement,
-  PropsWithChildren<ButtonProps>
->((props, ref) => {
-  const { children, label } = props;
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => {
+    const {
+      children,
+      label,
+      type = "button",
+      disabled = false,
+      primary = true,
+      size = "medium",
+      ...rest
+    } = props;
 
-  return <Root {...props}>{label}</Root>;
-});
+    return (
+      <Root
+        primary={primary}
+        ref={ref}
+        type={type}
+        size={size}
+        disabled={disabled}
+        {...rest}
+      >
+        {label}
+      </Root>
+    );
+  }
+);
