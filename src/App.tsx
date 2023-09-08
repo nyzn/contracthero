@@ -7,7 +7,8 @@ import { Worker } from "@react-pdf-viewer/core";
 import { Button } from "./components/Button";
 import tw, { styled } from "twin.macro";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { PdfDocument } from "pdfjs-dist";
+import * as pdfjs from "pdfjs-dist";
+import { TextItem } from "pdfjs-dist/types/src/display/api";
 
 const Title = styled.h1`
   font-size: 1.5em;
@@ -51,18 +52,28 @@ export const App = () => {
   const fileType = ["application/pdf"];
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log("SUBMIT: ", data);
     let reader = new FileReader();
     reader.readAsDataURL(data.fileInput[0]);
     reader.onloadend = async (e) => {
-      const contents = e.target.result;
-      console.log("DATA: ", e);
+      const contents = e.target?.result;
       setViewPdf(contents as string);
     };
   };
 
-  const onDocumentLoad = (e) => {
-    console.log("LOADED DOCUMENT: ", e);
+  const extractText = async () => {
+    let result = [];
+    let pdf;
+    pdf = await pdfjs.getDocument(viewPdf as string).promise;
+
+    let pages = pdf.numPages;
+    for (let i = 1; i <= pages; i++) {
+      let page = await pdf.getPage(i);
+      let textContent = await page.getTextContent();
+      let text = textContent.items.map((s) => (s as TextItem).str).join("");
+      result.push(text);
+    }
+
+    navigator.clipboard.writeText(result.toString());
   };
 
   return (
@@ -106,8 +117,9 @@ export const App = () => {
 
         <Button
           primary
-          label="Copy"
-          onClick={() => navigator.clipboard.writeText(viewPdf)}
+          label="Copy to clipboard"
+          onClick={extractText}
+          disabled={viewPdf == null}
         />
 
         <Title>PDF Viewer</Title>
@@ -119,7 +131,6 @@ export const App = () => {
                 <Viewer
                   fileUrl={viewPdf}
                   plugins={[defaultLayoutPluginInstance]}
-                  onDocumentLoad={onDocumentLoad}
                 />
               </Worker>
             </>

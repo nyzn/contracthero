@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import { ButtonHTMLAttributes, forwardRef, PropsWithChildren } from "react";
 import styled from "styled-components";
 import tw, { TwStyle } from "twin.macro";
 
@@ -10,6 +10,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   onClick?: () => void;
   disabled?: boolean;
+  type?: string;
 };
 
 const rootSizeVariant: Record<Size, TwStyle> = {
@@ -30,54 +31,57 @@ const rootSizeVariant: Record<Size, TwStyle> = {
   `,
 };
 
-const Root = styled.button<{ primary: boolean; size: Size; disabled: boolean }>(
-  ({ primary = true, size = "medium", disabled = false }) => [
-    tw`
+const Root = styled.button<{
+  $primary: boolean;
+  $size: Size;
+  disabled: boolean;
+}>(({ $primary = false, $size = "medium", disabled = false }) => [
+  tw`
       rounded-lg
       border
-      bg-orange-100
+      !bg-orange-400
       cursor-pointer
-      transition
       hover:border-white
       w-fit
+  `,
+  !$primary &&
+    tw`
+      !bg-orange-600  
     `,
-    !primary &&
-      tw`
-        bg-orange-200  
-    `,
-    disabled &&
-      tw`
+  disabled &&
+    tw`
       opacity-70
       text-gray-500
       cursor-default
+      !bg-orange-200
       `,
-    rootSizeVariant[size],
-  ]
-);
+  rootSizeVariant[$size],
+]);
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (props, ref) => {
-    const {
-      children,
-      label,
-      type = "button",
-      disabled = false,
-      primary = true,
-      size = "medium",
-      ...rest
-    } = props;
+export const Button = forwardRef<
+  HTMLButtonElement,
+  PropsWithChildren<ButtonProps>
+>((props, ref) => {
+  const {
+    children,
+    label,
+    disabled = false,
+    primary = false,
+    type = "button",
+    size = "medium",
+    ...rest
+  } = props;
 
-    return (
-      <Root
-        primary={primary}
-        ref={ref}
-        type={type}
-        size={size}
-        disabled={disabled}
-        {...rest}
-      >
-        {label}
-      </Root>
-    );
-  }
-);
+  return (
+    <Root
+      ref={ref}
+      $primary={primary}
+      $size={size}
+      disabled={disabled}
+      type={type}
+      {...rest}
+    >
+      {label}
+    </Root>
+  );
+});

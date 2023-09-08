@@ -9,3 +9,9 @@ Acceptance criteria:
 
 - A small web interface allowing to upload a PDF file
 - An output containing the text content of the PDF
+
+## Installation
+```
+npm i
+npm run dev
+```
