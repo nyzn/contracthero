@@ -15,3 +15,8 @@ Acceptance criteria:
 npm i
 npm run dev
 ```
+
+## Storybook
+```
+npm run storybook
+```
